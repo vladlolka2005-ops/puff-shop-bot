@@ -399,6 +399,7 @@ select.input-field {
     border-top: 1px solid var(--tg-card);
     z-index: 1000;
 }
+/* Стилі для відображення залишку товару */
 .stock-badge {
     position: absolute;
     top: 8px;
@@ -406,14 +407,24 @@ select.input-field {
     font-size: 10px;
     padding: 3px 8px;
     border-radius: 5px;
-    color: white;
     font-weight: bold;
+    color: white;
     z-index: 10;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.status-ok { background: #2ecc71; }
-.status-none { background: #e74c3c; }
+/* Колір, коли товар є (зелений) */
+.status-ok {
+    background: #2ecc71;
+}
 
+/* Колір, коли товару немає (червоний) */
+.status-none {
+    background: #e74c3c;
+}
+
+/* Стиль для заблокованої кнопки */
 .disabled-btn {
     background: #555 !important;
     opacity: 0.6;
