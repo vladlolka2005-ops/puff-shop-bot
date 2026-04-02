@@ -310,20 +310,42 @@ async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
     const tg = document.getElementById('order-tg').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
+    
+    // Додаємо збір даних про доставку та оплату
+    const delivery = document.getElementById('order-delivery').value;
+    const payment = document.getElementById('order-payment').value;
+    const city = document.getElementById('order-city').value.trim();
+    const warehouse = document.getElementById('order-warehouse').value.trim();
 
     if (!name || !tg || !/^\d{9}$/.test(phone)) {
         return alert('Перевірте контактні дані!');
     }
 
+    if (delivery === 'nova_poshta' && (!city || !warehouse)) {
+        return alert('Вкажіть місто та відділення Нової Пошти!');
+    }
+
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    // --- ТВОИ ДАННЫЕ ВСТАВЛЕНЫ ---
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
     const adminId = '6405107523'; 
 
+    // Формуємо красивий текст для способу доставки та оплати
+    const deliveryText = delivery === 'nova_poshta' ? `🚚 Нова Пошта (${city}, відд. №${warehouse})` : '🏃 Самовивіз';
+    const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті (тест)';
+
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
-    const text = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
+    
+    // Оновлений текст повідомлення
+    const text = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n` +
+                 `👤 Клієнт: ${name}\n` +
+                 `📞 Тел: +380${phone}\n` +
+                 `✈️ TG: ${tg}\n\n` +
+                 `📍 Доставка: ${deliveryText}\n` +
+                 `💰 Оплата: ${paymentText}\n\n` +
+                 `🛒 Товари:\n${itemsList}\n\n` +
+                 `💰 Сума: ${total} ₴`;
 
     try {
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -339,12 +361,10 @@ async function submitOrder() {
         console.error("Помилка відправки:", e);
     }
 
-    // Закриваємо модальні вікна
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
-    // Очищення кошика
     cart = {};
     saveCart();
     updateFooter();
