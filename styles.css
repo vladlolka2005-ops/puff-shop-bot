@@ -121,25 +121,46 @@ select.input-field {
 /* ================== INFO ================== */
 .info {
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     text-align: center;
 }
 
-.price {
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-    display: block;
-}
-
+/* 1 строка — название */
 .name {
     font-size: 0.85em;
     color: #b2bcc4;
-    margin-bottom: 10px;
 
     display: -webkit-box;
-    -webkit-line-clamp: 2;   /* ровно 2 строки */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* 2 строка — наличие */
+.stock {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.stock.in {
+    color: #31b545;
+}
+
+.stock.out {
+    color: #ff5252;
+}
+
+/* 3 строка — цена */
+.price {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* кнопка снизу */
+.buy-btn {
+    margin-top: 6px;
 }
 
 /* ================== BUTTONS ================== */
