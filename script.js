@@ -306,7 +306,7 @@ function openCheckout() {
     toggleDeliveryFields();
 }
 
-async function submitOrder() {
+    async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
     const tg = document.getElementById('order-tg').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
@@ -318,7 +318,7 @@ async function submitOrder() {
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    // --- ТВОЇ ДАНІ ---
+    // --- ВСТАВ СВОЇ ДАНІ ТУТ ---
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
     const adminId = '6405107523'; 
 
@@ -331,14 +331,21 @@ async function submitOrder() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id: adminId, text: text })
         });
-    } catch (e) {
+        
+        // Повідомляємо Telegram про успіх (вібрація)
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    } catch (e) 
         console.error("Помилка відправки:", e);
     }
 
+    // Закриваємо модалки та показуємо успіх
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
+    // Очищуємо кошик
     cart = {};
     saveCart();
     updateFooter();
