@@ -306,7 +306,7 @@ function openCheckout() {
     toggleDeliveryFields();
 }
 
-function submitOrder() {
+async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
     const tg = document.getElementById('order-tg').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
@@ -315,29 +315,34 @@ function submitOrder() {
         return alert('Перевірте контактні дані!');
     }
 
-    const delivery = document.getElementById('order-delivery').value;
-    const payment = document.getElementById('order-payment').value;
-
-    const city = document.getElementById('order-city').value.trim();
-    const warehouse = document.getElementById('order-warehouse').value.trim();
-
-    if (delivery === 'nova_poshta' && (!city || !warehouse)) {
-        return alert('Вкажіть місто та відділення!');
-    }
-
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    const finalData = {
-        user_info: { name, phone: '+380' + phone, tg },
-        items,
-        total_sum: total
-    };
+    // --- ТВОЇ ДАНІ ---
+    const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
+    const adminId = '6405107523'; 
 
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.sendData(JSON.stringify(finalData));
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
+    const text = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
+
+    try {
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: adminId, text: text })
+        });
+    } catch (e) {
+        console.error("Помилка відправки:", e);
     }
+
+    document.getElementById('checkout-screen').style.display = 'none';
+    document.getElementById('cart-screen').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+
+    cart = {};
+    saveCart();
+    updateFooter();
+}
 
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
