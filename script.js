@@ -434,29 +434,29 @@ function handleBuy(btn, id) {
 
     addToCart(id);
 }
-// Шукай у своєму коді рядок, схожий на container.innerHTML += ...
-// І заміни його на цей блок:
+data.forEach(item => {
+    // item.stock — це твоє значення з Supabase (тип int8)
+    const isAvailable = item.stock > 0; 
+    const statusText = isAvailable ? `В наявності (${item.stock} шт.)` : 'Немає в наявності';
+    const statusClass = isAvailable ? 'status-ok' : 'status-none';
 
-const isAvailable = item.count > 0; // Перевірка, чи є товар
-const statusText = isAvailable ? 'В наявності' : 'Немає в наявності';
-const statusClass = isAvailable ? 'status-ok' : 'status-none';
-
-container.innerHTML += `
-    <div class="product-card" style="position: relative;">
-        <div class="stock-badge ${statusClass}">${statusText}</div>
-        
-        <img src="${item.img_url}" alt="${item.name}">
-        
-        <div class="product-info">
-            <h3>${item.name}</h3>
-            <p class="price">${item.price} ₴</p>
+    container.innerHTML += `
+        <div class="product-card" style="position: relative;">
+            <div class="stock-badge ${statusClass}">${statusText}</div>
             
-            <button 
-                onclick="addToCart(${item.id})" 
-                ${isAvailable ? '' : 'disabled class="disabled-btn"'}
-            >
-                ${isAvailable ? 'Купити' : 'Очікується'}
-            </button>
+            <img src="${item.image_url}" alt="${item.name}">
+            
+            <div class="product-info">
+                <h3>${item.name}</h3>
+                <p class="price">${item.price} ₴</p>
+                
+                <button 
+                    onclick="addToCart(${item.id})" 
+                    ${isAvailable ? '' : 'disabled class="disabled-btn"'}
+                >
+                    ${isAvailable ? 'Купити' : 'Очікується'}
+                </button>
+            </div>
         </div>
-    </div>
-`;
+    `;
+});
