@@ -306,7 +306,7 @@ function openCheckout() {
     toggleDeliveryFields();
 }
 
-    async function submitOrder() {
+async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
     const tg = document.getElementById('order-tg').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
@@ -332,24 +332,12 @@ function openCheckout() {
             body: JSON.stringify({ chat_id: adminId, text: text })
         });
         
-        // Повідомляємо Telegram про успіх (вібрація)
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
-    } catch (e) 
+    } catch (e) {
         console.error("Помилка відправки:", e);
     }
-
-    // Закриваємо модалки та показуємо успіх
-    document.getElementById('checkout-screen').style.display = 'none';
-    document.getElementById('cart-screen').style.display = 'none';
-    document.getElementById('success-screen').style.display = 'block';
-
-    // Очищуємо кошик
-    cart = {};
-    saveCart();
-    updateFooter();
-}
 
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
