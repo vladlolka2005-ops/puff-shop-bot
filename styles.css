@@ -399,4 +399,21 @@ select.input-field {
     border-top: 1px solid var(--tg-card);
     z-index: 1000;
 }
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+.stock {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.stock.in {
+    color: #31b545; /* зелёный */
+}
+
+.stock.out {
+    color: #ff5252; /* красный */
+}
