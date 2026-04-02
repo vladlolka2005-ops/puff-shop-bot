@@ -134,9 +134,12 @@ select.input-field {
 .name {
     font-size: 0.85em;
     color: #b2bcc4;
-    height: 34px;
-    overflow: hidden;
     margin-bottom: 10px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;   /* ровно 2 строки */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* ================== BUTTONS ================== */
