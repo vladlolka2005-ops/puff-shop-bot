@@ -434,13 +434,17 @@ function handleBuy(btn, id) {
 
     addToCart(id);
 }
-stock.forEach(item => {
-    // item.stock — це твоє значення з Supabase (тип int8)
-    const isAvailable = item.stock > 0; 
-    const statusText = isAvailable ? `В наявності (${item.stock} шт.)` : 'Немає в наявності';
+// Код для відображення товарів з урахуванням колонки stock
+items.forEach(item => {
+    // Перевіряємо наявність за колонкою stock з вашої бази
+    const stockCount = item.stock; 
+    const isAvailable = stockCount > 0; 
+    
+    // Формуємо текст та клас статусу
+    const statusText = isAvailable ? `В наявності: ${stockCount} шт.` : 'Немає в наявності';
     const statusClass = isAvailable ? 'status-ok' : 'status-none';
 
-    container.innerHTML += `
+    const productCard = `
         <div class="product-card" style="position: relative;">
             <div class="stock-badge ${statusClass}">${statusText}</div>
             
@@ -459,4 +463,7 @@ stock.forEach(item => {
             </div>
         </div>
     `;
+    
+    // Додаємо картку в контейнер
+    document.getElementById('products-container').innerHTML += productCard;
 });
