@@ -417,3 +417,30 @@ select.input-field {
 .stock.out {
     color: #ff5252; /* красный */
 }
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Общий стиль */
+.stock-badge {
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Есть в наличии (зелёный бейдж) */
+.stock-badge.in {
+    background: rgba(49, 181, 69, 0.15);
+    color: #31b545;
+}
+
+/* Нет в наличии (красный текст) */
+.stock-badge.out {
+    background: none;
+    color: #ff5252;
+}
