@@ -86,9 +86,14 @@ function render() {
 					<img src="${p.image_url}" alt="" onclick="openImageModal('${p.image_url}')" style="cursor:pointer;">
 				</div>
 
-                <div class="info">
-                    <span class="price">${p.price} ₴</span>
-                    <div class="name">${p.name}</div>
+          <div class="info">
+    <div class="price-row">
+        <span class="price">${p.price} ₴</span>
+        <span class="stock ${p.stock > 0 ? 'in' : 'out'}">
+            ${p.stock > 0 ? 'Є' : 'Немає'}
+        </span>
+    </div>
+    <div class="name">${p.name}</div>
                     <button class="buy-btn" onclick="handleBuy(this, ${p.id})">Купити</button>
                 </div>
             </div>
