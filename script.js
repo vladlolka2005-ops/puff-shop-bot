@@ -88,11 +88,14 @@ function render() {
 
           <div class="info">
     <div class="price-row">
-        <span class="price">${p.price} ₴</span>
-        <span class="stock ${p.stock > 0 ? 'in' : 'out'}">
-            ${p.stock > 0 ? 'Є' : 'Немає'}
-        </span>
-    </div>
+       <div class="price-row">
+    <span class="price">${p.price} ₴</span>
+    <span class="stock-badge ${p.stock > 0 ? 'in' : 'out'}">
+        ${p.stock > 0 
+            ? `В наявності: ${p.stock} шт.` 
+            : 'Немає в наявності'}
+    </span>
+</div>
     <div class="name">${p.name}</div>
                     <button class="buy-btn" onclick="handleBuy(this, ${p.id})">Купити</button>
                 </div>
