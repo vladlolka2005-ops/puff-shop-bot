@@ -434,7 +434,7 @@ function handleBuy(btn, id) {
 
     addToCart(id);
 }
-data.forEach(item => {
+stock.forEach(item => {
     // item.stock — це твоє значення з Supabase (тип int8)
     const isAvailable = item.stock > 0; 
     const statusText = isAvailable ? `В наявності (${item.stock} шт.)` : 'Немає в наявності';
