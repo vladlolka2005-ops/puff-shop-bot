@@ -1,30 +1,40 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-	<script>
-      window.va = window.va || function () {
-        (window.vaq = window.vaq || []).push(arguments);
-      };
-    </script>
+    <!-- Мета -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>PUFF Shop</title>
 
+    <!-- Ініціалізація аналітики -->
+    <script>
+      window.va = window.va  function () {
+        (window.vaq = window.vaq  []).push(arguments);
+      };
+    </script>
+
+    <!-- Аналітика Vercel -->
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <!-- Бібліотеки -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+
+    <!-- Основний скрипт -->
     <script src="script.js" defer></script>
 
+    <!-- Стилі -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>      
 
     <!-- Заголовок -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 10px;">
-        <h2 style="margin: 0; font-size: 22px;">PUFF Shop</h2>
+        <h1 style="margin: 0; font-size: 22px;">PUFF Shop</h1>
         <button class="cat-btn" onclick="openProfile()">👤 Профіль</button>
     </div>
 
-    <!-- Профиль -->
+    <!-- Профіль -->
     <div id="profile-screen" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -43,7 +53,7 @@
             </div>
 
             <div class="manager-btn-wrapper">
-                <a href="https://t.me/nnpuff" target="_blank" class="manager-btn">
+                <a href="https://t.me/nnpuff" target="_blank" rel="noopener noreferrer" class="manager-btn">
                     <span>✈️</span> Написати менеджеру
                 </a>
             </div>
@@ -54,7 +64,7 @@
         </div>
     </div>
 
-    <!-- Избранное -->
+    <!-- Обране -->
     <div id="favorites-screen" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -62,18 +72,18 @@
                 Обране
             </div>
             <div id="favorites-grid" class="grid"></div>
-			
-			<!-- Кнопка корзины -->
-			<div id="fav-cart-container" style="margin-top: 20px; border-top: 1px solid var(--tg-card); padding-top: 15px;">
-				<button class="main-btn" onclick="openCart()" id="fav-cart-footer">
-					Кошик порожній
-				</button>
-			</div>
-			
+      
+      <!-- Кнопка кошика -->
+      <div id="fav-cart-container" style="margin-top: 20px; border-top: 1px solid var(--tg-card); padding-top: 15px;">
+        <button class="main-btn" onclick="openCart()" id="fav-cart-footer">
+          Кошик порожній
+        </button>
+      </div>
+      
         </div>
     </div>
 
-    <!-- История -->
+    <!-- Історія -->
     <div id="history-screen" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -84,14 +94,14 @@
         </div>
     </div>
 
-    <!-- Категории -->
+    <!-- Категорії -->
     <div class="categories">
         <div class="cat-btn active" onclick="filterCat('Рідина', this)">Рідина</div>
         <div class="cat-btn" onclick="filterCat('POD-Системи', this)">POD-Системи</div>
         <div class="cat-btn" onclick="filterCat('Картриджі', this)">Картриджі</div>
     </div>
 
-    <!-- Сортировка -->
+    <!-- Сортування -->
     <div class="sort-container">
         <div class="sort-wrapper">
             <select id="sort-select" class="input-field" onchange="sortProducts()">
@@ -101,9 +111,10 @@
             </select>
         </div>
     </div>
-    <div id="products-grid" class="grid"></div>
 
-    <!-- Кошик -->
+    <!-- Товари -->
+    <div id="products-grid" class="grid"></div>
+	<!-- Кошик -->
     <div class="footer">
         <button class="main-btn" onclick="openCart()" id="cart-footer">Кошик порожній</button>
     </div>
@@ -126,7 +137,7 @@
         </div>
     </div>
 
-    <!-- Оформление -->
+    <!-- Оформлення -->
     <div id="checkout-screen" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -136,7 +147,7 @@
 
             <div class="label">👤 КОНТАКТНІ ДАНІ:</div>
             <div class="input-group">
-                <input type="text" class="input-field" placeholder="Прізвище Ім'я по Батькові" id="order-name">
+                <input type="text" class="input-field" placeholder="Прізвище Ім'я по батькові" id="order-name">
             </div>
 
             <div class="label">Ваш Telegram:</div>
@@ -151,7 +162,7 @@
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" style="width: 20px; border-radius: 2px;">
                         <span style="color: white; font-size: 14px;">+380</span>
                     </span>
-                    <input type="tel" class="input-field" placeholder="XX XXX XX XX" id="order-phone" maxlength="9" style="padding-left: 85px;">
+                    <input type="tel" class="input-field" placeholder="XX XXX XX XX" id="order-phone" maxlength="9" inputmode="numeric" pattern="[0-9]*" style="padding-left: 85px;">
                 </div>
             </div>
 
@@ -188,14 +199,13 @@
                     </button>
                 </div>
             </div>
-
-            <div style="margin-top: 30px; padding-bottom: 50px;">
+			<div style="margin-top: 30px; padding-bottom: 50px;">
                 <button class="main-btn" onclick="submitOrder()">ПІДТВЕРДИТИ</button>
             </div>
         </div>
     </div>
 
-    <!-- Успех -->
+    <!-- Успішне замовлення -->
     <div id="success-screen" class="modal" style="display: none; text-align: center;">
         <div class="modal-content" style="margin-top: 50px;">
             <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
@@ -209,14 +219,13 @@
             </button>
         </div>
     </div>
-	
-	<div id="image-modal" class="modal" onclick="closeImageModal()">
-		<div class="modal-content" style="background:none; box-shadow:none; display:flex; justify-content:center; align-items:center;">
-			<img id="modal-image" style="max-width:100%; max-height:90vh; border-radius:12px;">
-		</div>
-	</div>
-	
+  
+  <!-- Модальне вікно для зображення -->
+  <div id="image-modal" class="modal" onclick="closeImageModal()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background:none; box-shadow:none; display:flex; justify-content:center; align-items:center;">
+      <img id="modal-image" style="max-width:100%; max-height:90vh; border-radius:12px;">
+    </div>
+  </div>
+  
 </body>
-	<script defer src="/_vercel/insights/script.js"></script>
-	<script defer src="/_vercel/insights/script.js"></script>
 </html>
