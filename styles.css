@@ -1,0 +1,401 @@
+/* ================== ROOT ================== */
+:root {
+    --tg-bg: #1c2732;
+    --tg-card: #2b3945;
+    --tg-blue: #3390ec;
+    --tg-green: #31b545;
+}
+
+/* ================== BASE ================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--tg-bg);
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 10px;
+}
+
+/* ================== INPUT / SELECT ================== */
+input, select {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+.input-field {
+    width: 100%;
+    background: var(--tg-card);
+    border: 1px solid #455a64;
+    color: white;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+select.input-field {
+    padding-right: 35px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+/* ================== GRID ================== */
+#favorites-grid {
+    padding-bottom: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-bottom: 100px;
+}
+
+/* ================== SORT ================== */
+.sort-container {
+    margin-bottom: 15px;
+    padding: 0 10px;
+}
+
+.sort-wrapper {
+    position: relative;
+}
+
+#sort-select {
+    width: 100%;
+    background: var(--tg-card);
+    border: 1px solid #455a64;
+    color: white;
+    padding: 10px 35px 10px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+/* убрали вторую стрелку */
+.custom-select::after {
+    display: none;
+}
+
+.sort-icon {
+    display: none;
+}
+
+/* ================== CARD ================== */
+.card {
+    background: var(--tg-card);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ================== IMAGE ================== */
+.img-wrap {
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 121px;
+    overflow: hidden;
+}
+
+.img-wrap img {
+    max-width: 98%;
+    max-height: 98%;
+    object-fit: contain;
+}
+
+/* ================== INFO ================== */
+.info {
+    padding: 10px;
+    text-align: center;
+}
+
+.price {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.name {
+    font-size: 0.85em;
+    color: #b2bcc4;
+    height: 34px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+/* ================== BUTTONS ================== */
+.buy-btn {
+    width: 100%;
+    background: var(--tg-blue);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ================== FOOTER ================== */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    background: var(--tg-bg);
+    border-top: 1px solid var(--tg-card);
+    z-index: 10;
+}
+
+.main-btn {
+    width: 100%;
+    background: var(--tg-green);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ================== MODAL ================== */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--tg-bg);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.modal-content {
+    padding: 20px 20px 120px;
+}
+
+.modal-header {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--tg-blue);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #b2bcc4;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* ================== LABEL ================== */
+.label {
+    font-size: 12px;
+    color: #b2bcc4;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* ================== INPUT GROUP ================== */
+.input-group {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+/* ================== CATEGORIES ================== */
+.categories {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    scrollbar-width: none;
+}
+
+.categories::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-btn {
+    background: var(--tg-card);
+    color: white;
+    border: 1px solid #455a64;
+    padding: 8px 15px;
+    border-radius: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.cat-btn.active {
+    border-color: var(--tg-blue);
+    color: var(--tg-blue);
+}
+
+/* ================== PROFILE ================== */
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    background: var(--tg-card);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.manager-btn-wrapper {
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+.manager-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #248bcf;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    width: 100%;
+    color: white;
+}
+
+.profile-menu-item:active {
+    background: #344656;
+}
+
+/* ================== FAVORITES ================== */
+.fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.8);
+    color: #888;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 2;
+    transition: 0.2s;
+}
+
+.fav-btn.active {
+    color: #ff5252;
+    background: white;
+}
+
+/* ================== QTY ================== */
+.qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #455a64;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    width: 25px;
+    cursor: pointer;
+}
+
+.qty-btn:active {
+    color: var(--tg-blue);
+}
+
+/* ================== CART ================== */
+.cart-item {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    background: var(--tg-card);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.cart-item img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    background: white;
+    border-radius: 5px;
+    object-fit: contain;
+}
+
+/* ================== REMOVE ================== */
+.remove-icon {
+    color: #888;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 10px;
+}
+
+.remove-icon:hover {
+    color: #ff5252;
+}
+
+#image-modal {
+    display: none;
+    background: rgba(0,0,0,0.9);
+}
+.buy-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+}
+
+.fly-image {
+    position: fixed;
+    z-index: 9999;
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    pointer-events: none;
+    transition: all 0.7s ease-in-out;
+}
+#fav-cart-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background: var(--tg-bg);
+    border-top: 1px solid var(--tg-card);
+    z-index: 1000;
+}
