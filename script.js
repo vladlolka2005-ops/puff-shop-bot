@@ -379,7 +379,25 @@ async function submitOrder() {
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
+for (let id in cart) {
+    const item = cart[id];
 
+    const product = productsData.find(p => p.id == id);
+    if (!product) continue;
+
+    const newStock = product.stock - item.qty;
+    if (newStock < 0) continue;
+
+    await supabaseClient
+        .from('Products')
+        .update({ stock: newStock })
+        .eq('id', id);
+
+    product.stock = newStock;
+}
+
+// чтобы обновился экран
+render();
     cart = {};
     saveCart();
     updateFooter();
