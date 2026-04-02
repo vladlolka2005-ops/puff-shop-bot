@@ -306,21 +306,38 @@ function openCheckout() {
     toggleDeliveryFields();
 }
 
-async function submitOrder() {
-    const name = document.getElementById('order-name').value.trim();
-    const tg = document.getElementById('order-tg').value.trim();
-    const phone = document.getElementById('order-phone').value.trim();
-    
-    // Додаємо збір даних про доставку та оплату
-    const delivery = document.getElementById('order-delivery').value;
-    const payment = document.getElementById('order-payment').value;
-    const city = document.getElementById('order-city').value.trim();
-    const warehouse = document.getElementById('order-warehouse').value.trim();
+async function try {
+        // 1. Надсилаємо замовлення ТТОБІ (адміну)
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: adminId, text: text })
+        });
 
-    if (!name || !tg || !/^\d{9}$/.test(phone)) {
-        return alert('Перевірте контактні дані!');
+        // 2. Надсилаємо інструкцію КЛІЄНТУ (у той же чат, де він відкрив магазин)
+        const clientText = `📦 Дякуємо за замовлення, ${name}!\n\n` +
+                           `🚚 НОВА ПОШТА: Передплата 50 грн + квитанція в особисті.\n` +
+                           `💳 ПОВНА ОПЛАТА: Номер картки 4874070059344406. Після оплати чекаємо на ваш чек.\n\n` +
+                           `🚀 САМОВИВІЗ: Напишіть менеджеру день та зручний час, щоб ми все підготували заздалегідь.\n\n` +
+                           `📩 Для підтвердження пишіть сюди: @nnpuff`;
+
+        // Використовуємо Telegram WebApp API, щоб дізнатися ID поточного користувача
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+            const clientId = window.Telegram.WebApp.initDataUnsafe.user.id;
+            
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: clientId, text: clientText })
+            });
+        }
+        
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    } catch (e) {
+        console.error("Помилка відправки:", e);
     }
-
     if (delivery === 'nova_poshta' && (!city || !warehouse)) {
         return alert('Вкажіть місто та відділення Нової Пошти!');
     }
