@@ -318,7 +318,7 @@ async function submitOrder() {
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    // --- ВСТАВ СВОЇ ДАНІ ТУТ ---
+    // --- ТВОИ ДАННЫЕ ВСТАВЛЕНЫ ---
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
     const adminId = '6405107523'; 
 
@@ -339,15 +339,16 @@ async function submitOrder() {
         console.error("Помилка відправки:", e);
     }
 
+    // Закриваємо модальні вікна
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
+    // Очищення кошика
     cart = {};
     saveCart();
     updateFooter();
 }
-
 
 // ================= START =================
 
