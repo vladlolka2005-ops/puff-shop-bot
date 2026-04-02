@@ -333,7 +333,7 @@ async function submitOrder() {
 
     // Формуємо красивий текст для способу доставки та оплати
     const deliveryText = delivery === 'nova_poshta' ? `🚚 Нова Пошта (${city}, відд. №${warehouse})` : '🏃 Самовивіз';
-    const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті (тест)';
+    const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті ';
 
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
     
