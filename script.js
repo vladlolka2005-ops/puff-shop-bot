@@ -311,7 +311,6 @@ function closeModal(id) {
 
 
 // ================= CHECKOUT =================
-
 function openCheckout() {
     if (!Object.keys(cart).length) return alert('Кошик порожній!');
     document.getElementById('checkout-screen').style.display = 'block';
@@ -324,6 +323,7 @@ async function submitOrder() {
     const phone = document.getElementById('order-phone').value.trim();
     const delivery = document.getElementById('order-delivery').value;
     const payment = document.getElementById('order-payment').value;
+
     const city = document.getElementById('order-city').value.trim();
     const warehouse = document.getElementById('order-warehouse').value.trim();
 
@@ -333,16 +333,52 @@ async function submitOrder() {
 
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+	
+// ================= SAVE TO SUPABASE =================
+const orderItems = items.map(i => ({
+    name: i.name,
+    qty: i.qty,
+    price: i.price
+}));
+
+const { data: orderData, error: orderError } = await supabaseClient
+    .from('orders')
+    .insert([
+        {
+            items: orderItems,
+            total: total,
+            status: 'new',
+
+            customer_name: name,
+            telegram: tg,
+            phone: phone,
+
+            delivery: delivery,
+            payment: payment,
+
+            city: delivery === 'nova_poshta' ? city : null,
+            warehouse: delivery === 'nova_poshta' ? warehouse : null
+        }
+    ])
+    .select(); // Чтобы получить ID заказа
+
+if (orderError) {
+    console.error('Ошибка сохранения заказа:', orderError);
+    alert('Помилка збереження замовлення!');
+    return;
+}
+
+// ID заказа (можно использовать дальше)
+const orderId = orderData[0].id;
 
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
     const adminId = '6405107523'; 
-
     const deliveryText = delivery === 'nova_poshta' ? `🚚 Нова Пошта (${city}, відд. №${warehouse})` : '🏃 Самовивіз';
     const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті';
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
 
     // Текст для ТЕБЕ (адміна)
-    const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n📍 Доставка: ${deliveryText}\n💰 Оплата: ${paymentText}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
+    const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ №${orderId}!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n📍 Доставка: ${deliveryText}\n💰 Оплата: ${paymentText}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
 
     // Текст для КЛІЄНТА (з реквізитами)
     const clientText = `📦 Дякуємо за замовлення, ${name}!\n\n` +
@@ -402,6 +438,7 @@ render();
     saveCart();
     updateFooter();
 }
+
 
 // ================= START =================
 

@@ -365,7 +365,7 @@ select.input-field {
 
 /* ================== CART ================== */
 .cart-item {
-    font-size: 15px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     background: var(--tg-card);
