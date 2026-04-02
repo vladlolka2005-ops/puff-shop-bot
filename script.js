@@ -426,7 +426,7 @@ function handleBuy(btn, id) {
     addToCart(id);
 }
 // Код для відображення товарів з урахуванням колонки stock
-items.forEach(item => {
+productsData.forEach(item => {
     // Перевіряємо наявність за колонкою stock з вашої бази
     const stockCount = item.stock; 
     const isAvailable = stockCount > 0; 
