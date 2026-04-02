@@ -41,63 +41,54 @@ function removeFromCart(id) {
 
 // ================= LOAD =================
 
+let productsData = []; // Змінна для зберігання товарів
+
 async function load() {
     const { data, error } = await supabaseClient.from('Products').select('*');
 
     if (error) {
-        console.error('Ошибка загрузки:', error);
+        console.error('Помилка завантаження:', error);
         return;
     }
 
-    productsData = data;
-    render();
+    productsData = data; // Зберігаємо отримані дані
+    render(); // Викликаємо малювання
 }
 
-
-// ================= RENDER PRODUCTS =================
-
 function render() {
-    const grid = document.getElementById('products-grid');
-    if (!grid) return;
+    const container = document.getElementById('products-container');
+    if (!container) return;
+    
+    container.innerHTML = ''; // Очищуємо перед виводом
 
-    let filtered = productsData.filter(p =>
-        currentCategory === 'Рідина' || p.category === currentCategory
-    );
+    // Використовуємо productsData, яку ми наповнили у load()
+    productsData.forEach(item => {
+        // Перевірка наявності (використовуємо твою колонку stock)
+        const isAvailable = item.stock > 0; 
+        const statusText = isAvailable ? `В наявності: ${item.stock} шт.` : 'Немає в наявності';
+        const statusClass = isAvailable ? 'status-ok' : 'status-none';
 
-    filtered.sort((a, b) => {
-        if (currentSort === 'promo') {
-            return (b.old_price ? 1 : 0) - (a.old_price ? 1 : 0);
-        }
-        if (currentSort === 'price-asc') return a.price - b.price;
-        if (currentSort === 'price-desc') return b.price - a.price;
-        return 0;
-    });
-
-    grid.innerHTML = filtered.map(p => {
-        const isFav = favorites.includes(p.id);
-
-        return `
-            <div class="card">
-                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${p.id})">
-                    ${isFav ? '❤️' : '🤍'}
-                </button>
-
-				<div class="img-wrap">
-					<img src="${p.image_url}" alt="" onclick="openImageModal('${p.image_url}')" style="cursor:pointer;">
-				</div>
-
-                <div class="info">
-                    <span class="price">${p.price} ₴</span>
-                    <div class="name">${p.name}</div>
-                    <button class="buy-btn" onclick="handleBuy(this, ${p.id})">Купити</button>
+        container.innerHTML += `
+            <div class="product-card" style="position: relative;">
+                <div class="stock-badge ${statusClass}">${statusText}</div>
+                
+                <img src="${item.image_url}" alt="${item.name}">
+                
+                <div class="product-info">
+                    <h3>${item.name}</h3>
+                    <p class="price">${item.price} ₴</p>
+                    
+                    <button 
+                        onclick="addToCart(${item.id})" 
+                        ${isAvailable ? '' : 'disabled class="disabled-btn"'}
+                    >
+                        ${isAvailable ? 'Купити' : 'Очікується'}
+                    </button>
                 </div>
             </div>
         `;
-    }).join('');
-
-    updateFooter();
+    });
 }
-
 
 // ================= CART =================
 
