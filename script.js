@@ -306,40 +306,17 @@ function openCheckout() {
     toggleDeliveryFields();
 }
 
-async function try {
-        // 1. Надсилаємо замовлення ТТОБІ (адміну)
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: adminId, text: text })
-        });
+async function submitOrder() {
+    const name = document.getElementById('order-name').value.trim();
+    const tg = document.getElementById('order-tg').value.trim();
+    const phone = document.getElementById('order-phone').value.trim();
+    const delivery = document.getElementById('order-delivery').value;
+    const payment = document.getElementById('order-payment').value;
+    const city = document.getElementById('order-city').value.trim();
+    const warehouse = document.getElementById('order-warehouse').value.trim();
 
-        // 2. Надсилаємо інструкцію КЛІЄНТУ (у той же чат, де він відкрив магазин)
-        const clientText = `📦 Дякуємо за замовлення, ${name}!\n\n` +
-                           `🚚 НОВА ПОШТА: Передплата 50 грн + квитанція в особисті.\n` +
-                           `💳 ПОВНА ОПЛАТА: Номер картки 4874070059344406. Після оплати чекаємо на ваш чек.\n\n` +
-                           `🚀 САМОВИВІЗ: Напишіть менеджеру день та зручний час, щоб ми все підготували заздалегідь.\n\n` +
-                           `📩 Для підтвердження пишіть сюди: @nnpuff`;
-
-        // Використовуємо Telegram WebApp API, щоб дізнатися ID поточного користувача
-        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-            const clientId = window.Telegram.WebApp.initDataUnsafe.user.id;
-            
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: clientId, text: clientText })
-            });
-        }
-        
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-    } catch (e) {
-        console.error("Помилка відправки:", e);
-    }
-    if (delivery === 'nova_poshta' && (!city || !warehouse)) {
-        return alert('Вкажіть місто та відділення Нової Пошти!');
+    if (!name || !tg || !/^\d{9}$/.test(phone)) {
+        return alert('Перевірте контактні дані!');
     }
 
     const items = Object.values(cart);
@@ -348,28 +325,37 @@ async function try {
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg'; 
     const adminId = '6405107523'; 
 
-    // Формуємо красивий текст для способу доставки та оплати
     const deliveryText = delivery === 'nova_poshta' ? `🚚 Нова Пошта (${city}, відд. №${warehouse})` : '🏃 Самовивіз';
-    const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті ';
-
+    const paymentText = payment === 'cash' ? '💵 Готівка / На карту' : '💳 Оплата на сайті';
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
-    
-    // Оновлений текст повідомлення
-    const text = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n` +
-                 `👤 Клієнт: ${name}\n` +
-                 `📞 Тел: +380${phone}\n` +
-                 `✈️ TG: ${tg}\n\n` +
-                 `📍 Доставка: ${deliveryText}\n` +
-                 `💰 Оплата: ${paymentText}\n\n` +
-                 `🛒 Товари:\n${itemsList}\n\n` +
-                 `💰 Сума: ${total} ₴`;
+
+    // Текст для ТЕБЕ (адміна)
+    const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n📍 Доставка: ${deliveryText}\n💰 Оплата: ${paymentText}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
+
+    // Текст для КЛІЄНТА (з реквізитами)
+    const clientText = `📦 Дякуємо за замовлення, ${name}!\n\n` +
+                       `🚚 НОВА ПОШТА: Передплата 50 грн + квитанція в особисті.\n` +
+                       `💳 ПОВНА ОПЛАТА: Номер картки 4874070059344406. Після оплати чекаємо на ваш чек.\n\n` +
+                       `🚀 САМОВИВІЗ: Напишіть менеджеру день та зручний час.\n\n` +
+                       `📩 Для підтвердження: @nnpuff`;
 
     try {
+        // Надсилаємо адміну
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: adminId, text: text })
+            body: JSON.stringify({ chat_id: adminId, text: adminText })
         });
+
+        // Надсилаємо клієнту
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+            const clientId = window.Telegram.WebApp.initDataUnsafe.user.id;
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: clientId, text: clientText })
+            });
+        }
         
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
