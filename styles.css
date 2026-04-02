@@ -399,3 +399,31 @@ select.input-field {
     border-top: 1px solid var(--tg-card);
     z-index: 1000;
 }
+/* Стиль плашки */
+.stock-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+    z-index: 10;
+    text-transform: uppercase;
+}
+
+.status-ok {
+    background: #2ecc71; /* Зелений колір */
+}
+
+.status-none {
+    background: #e74c3c; /* Червоний колір */
+}
+
+/* Стиль кнопки, коли товару немає */
+.disabled-btn {
+    background: #555 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
