@@ -41,7 +41,7 @@ function removeFromCart(id) {
 
 // ================= LOAD =================
 
-let productsData = []; // Змінна для зберігання товарів
+ // Змінна для зберігання товарів
 
 async function load() {
     const { data, error } = await supabaseClient.from('Products').select('*');
