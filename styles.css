@@ -468,3 +468,76 @@ select.input-field {
     background: none;
     color: #ff5252;
 }
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.status-confirmed {
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
+}
+
+.status-completed {
+    background: rgba(49, 181, 69, 0.15);
+    color: #31b545;
+}
+
+.status-rejected {
+    background: rgba(255, 82, 82, 0.15);
+    color: #ff5252;
+}
+.cancel-btn {
+    background: linear-gradient(135deg, #ff4d4f, #d9363e);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cancel-btn:hover {
+    opacity: 0.9;
+}
+
+.cancel-btn:active {
+    transform: scale(0.95);
+}
+.comment-field {
+    width: 100%;
+    max-width: 100%;
+    background: var(--tg-card);
+    border: 1px solid #455a64;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+
+    min-height: 80px;
+    resize: none;
+
+    box-sizing: border-box;
+
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.comment-field:focus,
+.comment-field:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}

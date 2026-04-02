@@ -50,9 +50,9 @@ async function load() {
     }
 
     productsData = data;
+	validateCart();
     render();
 }
-
 
 // ================= RENDER PRODUCTS =================
 
@@ -64,58 +64,43 @@ function render() {
         currentCategory === 'Рідина' || p.category === currentCategory
     );
 
-    filtered.sort((a, b) => {
-        if (currentSort === 'promo') {
-            return (b.old_price ? 1 : 0) - (a.old_price ? 1 : 0);
-        }
-        if (currentSort === 'price-asc') return a.price - b.price;
-        if (currentSort === 'price-desc') return b.price - a.price;
-        return 0;
-    });
+	filtered.sort((a, b) => {
+		// Сначала сортируем по наличию
+		if (b.stock !== a.stock) {
+			return b.stock - a.stock;
+		}
 
-    grid.innerHTML = filtered.map(p => {
-        const isFav = favorites.includes(p.id);
+		// Далее логика сортировки
+		if (currentSort === 'promo') {
+			return (b.old_price ? 1 : 0) - (a.old_price ? 1 : 0);
+		}
+		if (currentSort === 'price-asc') return a.price - b.price;
+		if (currentSort === 'price-desc') return b.price - a.price;
 
-        return `
-            <div class="card">
-                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${p.id})">
-                    ${isFav ? '❤️' : '🤍'}
-                </button>
+		return 0;
+	});
 
-				<div class="img-wrap">
-					<img src="${p.image_url}" alt="" onclick="openImageModal('${p.image_url}')" style="cursor:pointer;">
-				</div>
-
-<div class="info">
-    <div class="name">${p.name}</div>
-
-    <div class="stock ${p.stock > 0 ? 'in' : 'out'}">
-        ${p.stock > 0 
-            ? `В наявності: ${p.stock} шт.` 
-            : 'Немає в наявності'}
-    </div>
-
-    <div class="price">${p.price} ₴</div>
-
-    <button class="buy-btn" 
-        onclick="handleBuy(this, ${p.id})"
-        ${p.stock <= 0 ? 'disabled style="opacity:0.5"' : ''}>
-        ${p.stock > 0 ? 'Купити' : 'Немає'}
-    </button>
-</div>
-            </div>
-        `;
-    }).join('');
+	grid.innerHTML = filtered.map(p => {
+		const isFav = favorites.includes(p.id);
+		return renderProductCard(p, { isFavorite: isFav });
+	}).join('');
 
     updateFooter();
 }
-
 
 // ================= CART =================
 
 function addToCart(id) {
     const product = productsData.find(p => p.id === id);
     if (!product) return;
+
+    const currentQty = cart[id]?.qty || 0;
+
+    // Проверка stock
+    if (currentQty >= product.stock) {
+        alert('Більше немає в наявності');
+        return;
+    }
 
     if (cart[id]) {
         cart[id].qty++;
@@ -134,9 +119,19 @@ function addToCart(id) {
 function changeQty(id, delta) {
     if (!cart[id]) return;
 
+    const product = productsData.find(p => p.id == id);
+    if (!product) return;
+
     const newQty = cart[id].qty + delta;
 
+    // Не меньше
     if (newQty < 1) return;
+
+    // Не больше stock
+    if (newQty > product.stock) {
+        alert('Досягнуто максимальну кількість товару на складі');
+        return;
+    }
 
     cart[id].qty = newQty;
 
@@ -165,6 +160,23 @@ function updateFooter() {
     // Кнопка в избранном
     const favBtn = document.getElementById('fav-cart-footer');
     if (favBtn) favBtn.innerText = text;
+}
+
+function validateCart() {
+    for (let id in cart) {
+        const product = productsData.find(p => p.id == id);
+        if (!product) continue;
+
+        if (cart[id].qty > product.stock) {
+            cart[id].qty = product.stock;
+        }
+
+        if (product.stock <= 0) {
+            delete cart[id];
+        }
+    }
+
+    saveCart();
 }
 
 function renderCart() {
@@ -204,10 +216,11 @@ function renderCart() {
     document.getElementById('cart-total').innerText = `Разом: ${total} ₴`;
 }
 
-
 // ================= FAVORITES =================
 
 function toggleFav(id) {
+    id = Number(id);
+
     const index = favorites.indexOf(id);
 
     if (index === -1) {
@@ -217,44 +230,38 @@ function toggleFav(id) {
     }
 
     localStorage.setItem('puff_favs', JSON.stringify(favorites));
+
     render();
+
+    if (document.getElementById('favorites-screen')?.style.display === 'block') {
+        openFavorites();
+    }
 }
 
 function openFavorites() {
     document.getElementById('favorites-screen').style.display = 'block';
 
-    const grid = document.getElementById('favorites-grid');
-    const favProducts = productsData.filter(p => favorites.includes(p.id));
+    const favProducts = productsData
+        .filter(p => favorites.includes(p.id))
+        .map(p => {
+            return productsData.find(x => x.id === p.id) || p;
+        });
 
+    const grid = document.getElementById('favorites-grid');
     const cartContainer = document.getElementById('fav-cart-container');
 
     if (!favProducts.length) {
         grid.innerHTML = '<p style="grid-column:1/3; text-align:center; color:#888;">Тут поки порожньо</p>';
-
-        // Скрываем кнопку корзины
         if (cartContainer) cartContainer.style.display = 'none';
-
         return;
     }
 
-    // Показываем кнопку корзины
     if (cartContainer) cartContainer.style.display = 'block';
 
-    grid.innerHTML = favProducts.map(p => `
-        <div class="card">
-            <button class="fav-btn active" onclick="toggleFav(${p.id}); openFavorites(); render();">❤️</button>
-            <div class="img-wrap">
-                <img src="${p.image_url}" onclick="openImageModal('${p.image_url}')" style="cursor:pointer;">
-            </div>
-            <div class="info">
-                <span class="price">${p.price} ₴</span>
-                <div class="name">${p.name}</div>
-                <button class="buy-btn" onclick="handleBuy(this, ${p.id})">Купити</button>
-            </div>
-        </div>
-    `).join('');
+    grid.innerHTML = favProducts.map(p =>
+        renderProductCard(p, { isFavorite: true })
+    ).join('');
 }
-
 
 // ================= UI =================
 
@@ -289,7 +296,6 @@ function toggleDeliveryFields() {
 
 function openCart() {
     if (Object.keys(cart).length === 0) {
-        alert('Кошик порожній!');
         return;
     }
 
@@ -303,6 +309,7 @@ function openProfile() {
 
 function openHistory() {
     document.getElementById('history-screen').style.display = 'block';
+    loadHistory();
 }
 
 function closeModal(id) {
@@ -319,23 +326,26 @@ function openCheckout() {
 
 async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
-    const tg = document.getElementById('order-tg').value.trim();
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+	const telegramId = tgUser?.id || null;
+	const telegramUsername = tgUser?.username ? '@' + tgUser.username : null;
     const phone = document.getElementById('order-phone').value.trim();
     const delivery = document.getElementById('order-delivery').value;
     const payment = document.getElementById('order-payment').value;
-
     const city = document.getElementById('order-city').value.trim();
     const warehouse = document.getElementById('order-warehouse').value.trim();
-
-    if (!name || !tg || !/^\d{9}$/.test(phone)) {
-        return alert('Перевірте контактні дані!');
-    }
+	const comment = document.getElementById('order-comment').value.trim();
+	
+	if (!name || !/^\d{9}$/.test(phone)) {
+		return alert('Перевірте контактні дані!');
+	}
 
     const items = Object.values(cart);
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 	
 // ================= SAVE TO SUPABASE =================
 const orderItems = items.map(i => ({
+	id: i.id,
     name: i.name,
     qty: i.qty,
     price: i.price
@@ -347,20 +357,23 @@ const { data: orderData, error: orderError } = await supabaseClient
         {
             items: orderItems,
             total: total,
-            status: 'new',
+            status: 'pending',
 
             customer_name: name,
-            telegram: tg,
+            telegram: telegramUsername,
+            telegram_id: telegramId,
             phone: phone,
 
             delivery: delivery,
             payment: payment,
 
             city: delivery === 'nova_poshta' ? city : null,
-            warehouse: delivery === 'nova_poshta' ? warehouse : null
+            warehouse: delivery === 'nova_poshta' ? warehouse : null,
+
+            comment: comment || null
         }
     ])
-    .select(); // Чтобы получить ID заказа
+    .select();
 
 if (orderError) {
     console.error('Ошибка сохранения заказа:', orderError);
@@ -368,6 +381,15 @@ if (orderError) {
     return;
 }
 
+if (!orderData || orderData.length === 0) {
+    console.error('Нет данных после сохранения заказа');
+    alert('Помилка отримання даних замовлення!');
+    return;
+}
+
+const orderNumber = orderData[0].order_number;
+const prettyId = String(orderNumber).padStart(6, '0');
+	
 // ID заказа (можно использовать дальше)
 const orderId = orderData[0].id;
 
@@ -378,14 +400,15 @@ const orderId = orderData[0].id;
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
 
     // Текст для ТЕБЕ (адміна)
-    const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ №${orderId}!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${tg}\n\n📍 Доставка: ${deliveryText}\n💰 Оплата: ${paymentText}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
+	const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ №${prettyId}!\n\n👤 Клієнт: ${name}\n📞 Тел: +380${phone}\n✈️ TG: ${telegramUsername || '—'}\n\n📍 Доставка: ${deliveryText}\n💰 Оплата: ${paymentText}\n\n📝 Коментар: ${comment || '—'}\n\n🛒 Товари:\n${itemsList}\n\n💰 Сума: ${total} ₴`;
 
     // Текст для КЛІЄНТА (з реквізитами)
-    const clientText = `📦 Дякуємо за замовлення, ${name}!\n\n` +
-                       `🚚 НОВА ПОШТА: Передплата 50 грн + квитанція в особисті.\n` +
-                       `💳 ПОВНА ОПЛАТА: Номер картки 4874070059344406. Після оплати чекаємо на ваш чек.\n\n` +
-                       `🚀 САМОВИВІЗ: Напишіть менеджеру день та зручний час.\n\n` +
-                       `📩 Для підтвердження: @nnpuff`;
+	const clientText = `📦 Дякуємо за замовлення №${prettyId}, ${name}!\n\n` +
+					  `🚚 НОВА ПОШТА: передплата 50 грн.\n\n` +
+					  `💳 ПОВНА ОПЛАТА: номер картки 4874070059344406\n\n` +
+					  `📩 Після оплати очікуємо на вашу квитанцію.\n\n` +
+					  `🚀 САМОВИВІЗ: напишіть менеджеру день і зручний час.\n\n` +
+					  `📩 Зв’язок з менеджером: @nnpuff`;
 
     try {
         // Надсилаємо адміну
@@ -396,14 +419,16 @@ const orderId = orderData[0].id;
         });
 
         // Надсилаємо клієнту
-        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-            const clientId = window.Telegram.WebApp.initDataUnsafe.user.id;
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: clientId, text: clientText })
-            });
-        }
+		if (telegramId) {
+			await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					chat_id: telegramId,
+					text: clientText
+				})
+			});
+		}
         
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
@@ -415,28 +440,30 @@ const orderId = orderData[0].id;
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
-for (let id in cart) {
-    const item = cart[id];
+	for (let id in cart) {
+		const item = cart[id];
 
-    const product = productsData.find(p => p.id == id);
-    if (!product) continue;
+		const product = productsData.find(p => p.id == id);
+		
+		if (!product) continue;
+			if (item.qty > product.stock) {
+				alert(`Недостатньо товару: ${product.name}`);
+				return;
+			}
+		const newStock = product.stock - item.qty;
+		if (newStock < 0) continue;
 
-    const newStock = product.stock - item.qty;
-    if (newStock < 0) continue;
+		await supabaseClient
+			.from('Products')
+			.update({ stock: newStock })
+			.eq('id', id);
 
-    await supabaseClient
-        .from('Products')
-        .update({ stock: newStock })
-        .eq('id', id);
-
-    product.stock = newStock;
-}
-
-// чтобы обновился экран
-render();
+		product.stock = newStock;
+	}
     cart = {};
     saveCart();
     updateFooter();
+	render();
 }
 
 
@@ -501,36 +528,292 @@ function handleBuy(btn, id) {
 
     addToCart(id);
 }
-// Код для відображення товарів з урахуванням колонки stock
-productsData.forEach(item => {
-    // Перевіряємо наявність за колонкою stock з вашої бази
-    const stockCount = item.stock; 
-    const isAvailable = stockCount > 0; 
-    
-    // Формуємо текст та клас статусу
-    const statusText = isAvailable ? `В наявності: ${stockCount} шт.` : 'Немає в наявності';
-    const statusClass = isAvailable ? 'status-ok' : 'status-none';
 
-    const productCard = `
-        <div class="product-card" style="position: relative;">
-            <div class="stock-badge ${statusClass}">${statusText}</div>
-            
-            <img src="${item.image_url}" alt="${item.name}">
-            
-            <div class="product-info">
-                <h3>${item.name}</h3>
-                <p class="price">${item.price} ₴</p>
-                
-                <button 
-                    onclick="addToCart(${item.id})" 
-                    ${isAvailable ? '' : 'disabled class="disabled-btn"'}
-                >
-                    ${isAvailable ? 'Купити' : 'Очікується'}
+
+function renderProductCard(p, { isFavorite = false } = {}) {
+    return `
+        <div class="card">
+            <button class="fav-btn ${isFavorite ? 'active' : ''}" 
+                onclick="toggleFav(${p.id})">
+                ${isFavorite ? '❤️' : '🤍'}
+            </button>
+
+            <div class="img-wrap">
+                <img src="${p.image_url}" 
+                     onclick="openImageModal('${p.image_url}')" 
+                     style="cursor:pointer;">
+            </div>
+
+            <div class="info">
+                ${renderStock(p.stock)}
+
+                <div class="price">${p.price} ₴</div>
+                <div class="name">${p.name}</div>
+
+                <button class="buy-btn" 
+                    onclick="handleBuy(this, ${p.id})"
+                    ${p.stock <= 0 ? 'disabled style="opacity:0.5"' : ''}>
+                    ${p.stock > 0 ? 'Купити' : 'Немає'}
                 </button>
             </div>
         </div>
     `;
-    
-    // Додаємо картку в контейнер
-    document.getElementById('products-container').innerHTML += productCard;
-});
+}
+function renderStock(stock) {
+    return `
+        <div class="stock ${stock > 0 ? 'in' : 'out'}">
+            ${stock > 0 
+                ? `В наявності: ${stock} шт.` 
+                : 'Немає в наявності'}
+        </div>
+    `;
+}
+async function loadHistory() {
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const telegramId = tgUser?.id;
+
+    if (!telegramId) {
+        document.getElementById('history-screen').innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="closeModal('history-screen')">‹</button>
+                    Історія
+                </div>
+                <p style="text-align:center; color:#888;">Не вдалося отримати користувача Telegram</p>
+            </div>
+        `;
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('telegram_id', telegramId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    renderHistory(data || []);
+}
+
+function renderHistory(orders) {
+    const container = document.getElementById('history-screen');
+
+    // Маппинг статусов
+    const statusLabelMap = {
+        pending: 'В процесi',
+        confirmed: 'Підтверджено',
+        completed: 'Виконано',
+        rejected: 'Вiдхилено'
+    };
+
+    const statusClassMap = {
+        pending: 'status-pending',
+        confirmed: 'status-confirmed',
+        completed: 'status-completed',
+        rejected: 'status-rejected'
+    };
+
+    if (!orders.length) {
+        container.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="back-btn" onclick="closeModal('history-screen')">‹</button>
+                    Історія
+                </div>
+                <p style="text-align:center; color:#888;">Замовлень ще немає</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('history-screen')">‹</button>
+                Історія
+            </div>
+    `;
+
+    orders.forEach(order => {
+        const itemsHtml = order.items.map(i => `
+            <div style="font-size:13px; color:#b2bcc4;">
+                • ${i.name} x${i.qty}
+            </div>
+        `).join('');
+
+        const prettyId = String(order.order_number).padStart(6, '0');
+
+        const statusKey = order.status;
+        const statusLabel = statusLabelMap[statusKey] || statusKey;
+        const statusClass = statusClassMap[statusKey] || '';
+
+        html += `
+            <div style="background: var(--tg-card); padding: 12px; border-radius: 12px; margin-bottom: 10px;">
+                
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <b>№${prettyId}</b>
+                    <span style="color:#31b545;">${order.total} ₴</span>
+                </div>
+
+                <div style="font-size:12px; color:#888; margin-bottom:5px;">
+                    ${new Date(order.created_at).toLocaleString()}
+                </div>
+
+				<div style="margin-bottom:6px; font-size:13px;">
+					Статус: 
+					<span class="status-badge ${statusClass}">
+						${statusLabel}
+					</span>
+				</div>
+
+				<div>
+					${itemsHtml}
+				</div>
+
+				${order.status === 'pending' ? `
+					<div style="margin-top:10px; text-align:right;">
+						<button class="cancel-btn" onclick="confirmCancelOrder('${order.id}')">
+							Скасувати замовлення
+						</button>
+					</div>
+				` : ''}
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    container.innerHTML = html;
+}
+
+// Получение статуса
+function getStatusLabel(status) {
+    switch (status) {
+        case 'pending': return 'В процесi';
+        case 'confirmed': return 'Підтверджено';
+        case 'completed': return 'Виконано';
+        case 'rejected': return 'Вiдхилено';
+        default: return status;
+    }
+}
+
+// Отмена ордера
+async function cancelOrder(orderId) {
+    try {
+        const { data: order, error } = await supabaseClient
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+
+        if (error) throw error;
+
+        if (order.status !== 'pending') {
+            alert('Замовлення вже не можна скасувати');
+            return;
+        }
+
+        // Возврат товаров
+        for (const item of order.items) {
+            const { data: product, error: getError } = await supabaseClient
+                .from('Products')
+                .select('stock')
+                .eq('id', item.id)
+                .single();
+
+            if (getError) throw getError;
+
+            const newStock = product.stock + item.qty;
+
+            const { error: updateError } = await supabaseClient
+                .from('Products')
+                .update({ stock: newStock })
+                .eq('id', item.id);
+
+            if (updateError) throw updateError;
+
+            const localProduct = productsData.find(p => p.id == item.id);
+            if (localProduct) {
+                localProduct.stock = newStock;
+            }
+        }
+
+        // Обновляем статус заказа
+        const { error: updateOrderError } = await supabaseClient
+            .from('orders')
+            .update({ status: 'rejected' })
+            .eq('id', orderId);
+
+        if (updateOrderError) throw updateOrderError;
+
+        // ================= TELEGRAM =================
+        const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
+        const adminId = '6405107523';
+
+        const orderNumber = order.order_number;
+        const prettyId = String(orderNumber).padStart(6, '0');
+
+        const itemsList = order.items
+            .map(i => `- ${i.name} (x${i.qty})`)
+            .join('\n');
+
+        // --- Админу ---
+        const adminCancelText = `❌ ЗАМОВЛЕННЯ СКАСОВАНО №${prettyId}
+
+		👤 Клієнт: ${order.customer_name}
+		📞 Тел: +380${order.phone}
+		✈️ TG: ${order.telegram || '—'}
+
+		🛒 Товари:
+		${itemsList}
+
+		💰 Сума: ${order.total} ₴
+		`;
+
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: adminId,
+                text: adminCancelText
+            })
+        });
+
+        // --- Пользователю ---
+        if (order.telegram_id) {
+            const userCancelText = `❌ Ваше замовлення №${prettyId} було скасовано.
+			Якщо це помилка або у вас є питання — зв’яжіться з менеджером: @nnpuff`;
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: order.telegram_id,
+                    text: userCancelText
+                })
+            });
+        }
+
+        validateCart();
+        render();
+        updateFooter();
+
+        loadHistory();
+
+    } catch (err) {
+        console.error(err);
+        alert('Помилка при скасуванні');
+    }
+}
+
+// Подтверждение отмены заказа
+function confirmCancelOrder(orderId) {
+    const confirmed = confirm('Ви дійсно хочете скасувати це замовлення?');
+
+    if (!confirmed) return;
+
+    cancelOrder(orderId);
+}

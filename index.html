@@ -90,7 +90,6 @@
                 <button class="back-btn" onclick="closeModal('history-screen')">‹</button>
                 Історія
             </div>
-            <p style="text-align: center; color: #888; margin-top: 50px;">Ще в розробці</p>
         </div>
     </div>
 
@@ -151,11 +150,6 @@
                 <input type="text" class="input-field" placeholder="Прізвище Ім'я по батькові" id="order-name">
             </div>
 
-            <div class="label">Ваш Telegram:</div>
-            <div class="input-group">
-                <input type="text" class="input-field" placeholder="@username_tg" id="order-tg">
-            </div>
-
             <div class="label" style="margin-top: 15px;">Ваш номер телефону:</div>
             <div class="input-group">
                 <div style="position: relative;">
@@ -200,7 +194,12 @@
                     </button>
                 </div>
             </div>
-
+			
+			<div class="label" style="margin-top: 15px;">📝 Коментар до замовлення:</div>
+			<div class="input-group">
+				<textarea id="order-comment" class="input-field comment-field" placeholder="Ваші побажання (необов’язково)"></textarea>
+			</div>
+			
             <div style="margin-top: 30px; padding-bottom: 50px;">
                 <button class="main-btn" onclick="submitOrder()">ПІДТВЕРДИТИ</button>
             </div>
