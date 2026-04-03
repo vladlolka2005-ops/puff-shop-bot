@@ -8,9 +8,9 @@
 
     <!-- Ініціалізація аналітики -->
     <script>
-      window.va = window.va || function () {
-        (window.vaq = window.vaq || []).push(arguments);
-      };
+        window.va = window.va || function () {
+            (window.vaq = window.vaq || []).push(arguments);
+        };
     </script>
 
     <!-- Аналітика Vercel -->
@@ -26,7 +26,7 @@
     <!-- Стилі -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>      
+<body>
 
     <!-- Заголовок -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 10px;">
@@ -71,15 +71,15 @@
                 <button class="back-btn" onclick="closeModal('favorites-screen')">‹</button>
                 Обране
             </div>
+
             <div id="favorites-grid" class="grid"></div>
-			
-			<!-- Кнопка кошика -->
-			<div id="fav-cart-container" style="margin-top: 20px; border-top: 1px solid var(--tg-card); padding-top: 15px;">
-				<button class="main-btn" onclick="openCart()" id="fav-cart-footer">
-					Кошик порожній
-				</button>
-			</div>
-			
+
+            <!-- Кнопка кошика -->
+            <div id="fav-cart-container" style="margin-top: 20px; border-top: 1px solid var(--tg-card); padding-top: 15px;">
+                <button class="main-btn" onclick="openCart()" id="fav-cart-footer">
+                    Кошик порожній
+                </button>
+            </div>
         </div>
     </div>
 
@@ -114,11 +114,12 @@
     <!-- Товари -->
     <div id="products-grid" class="grid"></div>
 
-    <!-- Кошик -->
+    <!-- Кошик (футер) -->
     <div class="footer">
         <button class="main-btn" onclick="openCart()" id="cart-footer">Кошик порожній</button>
     </div>
 
+    <!-- Кошик (модальне) -->
     <div id="cart-screen" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -157,7 +158,8 @@
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" style="width: 20px; border-radius: 2px;">
                         <span style="color: white; font-size: 14px;">+380</span>
                     </span>
-                    <input type="tel" class="input-field" placeholder="XX XXX XX XX" id="order-phone" maxlength="9" inputmode="numeric" pattern="[0-9]*" style="padding-left: 85px;">
+                    <input type="tel" class="input-field" placeholder="XX XXX XX XX" id="order-phone"
+                           maxlength="9" inputmode="numeric" pattern="[0-9]*" style="padding-left: 85px;">
                 </div>
             </div>
 
@@ -194,12 +196,12 @@
                     </button>
                 </div>
             </div>
-			
-			<div class="label" style="margin-top: 15px;">📝 Коментар до замовлення:</div>
-			<div class="input-group">
-				<textarea id="order-comment" class="input-field comment-field" placeholder="Ваші побажання (необов’язково)"></textarea>
-			</div>
-			
+
+            <div class="label" style="margin-top: 15px;">📝 Коментар до замовлення:</div>
+            <div class="input-group">
+                <textarea id="order-comment" class="input-field comment-field" placeholder="Ваші побажання (необов'язково)"></textarea>
+            </div>
+
             <div style="margin-top: 30px; padding-bottom: 50px;">
                 <button class="main-btn" onclick="submitOrder()">ПІДТВЕРДИТИ</button>
             </div>
@@ -220,13 +222,14 @@
             </button>
         </div>
     </div>
-	
-	<!-- Модальне вікно для зображення -->
-	<div id="image-modal" class="modal" onclick="closeImageModal()">
-		<div class="modal-content" onclick="event.stopPropagation()" style="background:none; box-shadow:none; display:flex; justify-content:center; align-items:center;">
-			<img id="modal-image" style="max-width:100%; max-height:90vh; border-radius:12px;">
-		</div>
-	</div>
-	
+
+    <!-- Модальне вікно для зображення -->
+    <div id="image-modal" class="modal" onclick="closeImageModal()">
+        <div class="modal-content" onclick="event.stopPropagation()"
+             style="background: none; box-shadow: none; display: flex; justify-content: center; align-items: center;">
+            <img id="modal-image" style="max-width: 100%; max-height: 90vh; border-radius: 12px;">
+        </div>
+    </div>
+
 </body>
 </html>
