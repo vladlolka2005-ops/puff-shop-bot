@@ -5,10 +5,11 @@ const S_KEY = 'sb_publishable_5WlTFr_cduyplbY4BS2w2w_cevKpWmW';
 
 const supabaseClient = supabase.createClient(S_URL, S_KEY);
 
+let activeDiscount = 0;
+let activePromoCode = null;
+
 let productsData = [];
 let currentSort = 'promo';
-let currentCategory = 'Рідина';
-
 let cart = {};
 let favorites = JSON.parse(localStorage.getItem('puff_favs')) || [];
 
