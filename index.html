@@ -95,10 +95,10 @@
 
     <!-- Категорії -->
     <div class="categories">
-    <div class="cat-btn" onclick="filterCat('Рідина', this)">Рідина</div>
-    <div class="cat-btn" onclick="filterCat('POD-Системи', this)">POD-Системи</div>
-    <div class="cat-btn" onclick="filterCat('Картриджі', this)">Картриджі</div>
-</div>
+        <div class="cat-btn active" onclick="filterCat('Рідина', this)">Рідина</div>
+        <div class="cat-btn" onclick="filterCat('POD-Системи', this)">POD-Системи</div>
+        <div class="cat-btn" onclick="filterCat('Картриджі', this)">Картриджі</div>
+    </div>
 
     <!-- Сортування -->
     <div class="sort-container">
@@ -196,12 +196,7 @@
                     </button>
                 </div>
             </div>
-             <div class="label" style="margin-top: 15px;">🎟️ ПРОМОКОД:</div>
-<div class="input-group" style="display: flex; gap: 8px;">
-    <input type="text" class="input-field" placeholder="Введіть код" id="promo-input" style="flex: 1;">
-    <button class="buy-btn" style="width: auto; padding: 0 15px; margin-top: 0;" onclick="applyPromo()">OK</button>
-</div>
-<div id="promo-message" style="font-size: 12px; margin-top: -10px; margin-bottom: 15px; min-height: 15px;"></div>
+
             <div class="label" style="margin-top: 15px;">📝 Коментар до замовлення:</div>
             <div class="input-group">
                 <textarea id="order-comment" class="input-field comment-field" placeholder="Ваші побажання (необов'язково)"></textarea>

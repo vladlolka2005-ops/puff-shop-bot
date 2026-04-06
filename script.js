@@ -5,13 +5,11 @@ const S_KEY = 'sb_publishable_5WlTFr_cduyplbY4BS2w2w_cevKpWmW';
 
 const supabaseClient = supabase.createClient(S_URL, S_KEY);
 
-let activeDiscount = 0;
-let activePromoCode = null;
-
 let productsData = [];
 let currentSort = 'promo';
-let cart = {};
 let currentCategory = 'Рідина';
+
+let cart = {};
 let favorites = JSON.parse(localStorage.getItem('puff_favs')) || [];
 
 
@@ -50,8 +48,7 @@ async function load() {
         return;
     }
 
-    productsData = data || [];
-    console.log("Загруженные товары:", productsData);
+    productsData = data;
     validateCart();
     render();
 }
@@ -63,11 +60,9 @@ function render() {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
 
-    let filtered = productsData.filter(p => {
-        if (currentCategory === 'all') return true;
-
-        return p.category?.toLowerCase() === currentCategory.toLowerCase();
-    });
+    let filtered = productsData.filter(p =>
+        currentCategory === 'Рідина' || p.category === currentCategory
+    );
 
     filtered.sort((a, b) => {
         if (b.stock !== a.stock) {
@@ -82,10 +77,6 @@ function render() {
 
         return 0;
     });
-
-    console.log("Категория:", currentCategory);
-    console.log("Товары:", productsData);
-    console.log("После фильтра:", filtered);
 
     grid.innerHTML = filtered.map(p => {
         const isFav = favorites.includes(p.id);
@@ -267,39 +258,7 @@ function openFavorites() {
 
 
 // ================= UI =================
-async function applyPromo() {
-    const codeInput = document.getElementById('promo-input').value.trim();
-    const msg = document.getElementById('promo-message');
-    
-    if (!codeInput) return;
 
-    // Ищем код в твоей таблице promocodes
-    const { data, error } = await supabaseClient
-        .from('promocodes')
-        .select('*')
-        .eq('code', codeInput)
-        .eq('is_used', false)
-        .single();
-
-    if (error || !data) {
-        msg.style.color = '#ff5252';
-        msg.innerText = '❌ Код недійсний або використаний';
-        activeDiscount = 0;
-        activePromoCode = null;
-  } else {
-    msg.style.color = '#31b545';
-    
-    // Считаем сумму скидки в процентах от общей суммы (замени totalAmount на свою переменную суммы)
-    const total = parseFloat(document.getElementById('total-price').innerText); 
-    const discountValue = (total * data.discount_amount) / 100;
-
-    msg.innerText = `✅ Знижка ${data.discount_amount}% активована! (-${discountValue.toFixed(0)} ₴)`;
-    
-    // Сохраняем вычисленную сумму скидки, чтобы она отнялась при финальном расчете
-    activeDiscount = discountValue;
-    activePromoCode = data.code;
-}
-}
 function filterCat(cat, el) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
@@ -382,8 +341,7 @@ async function submitOrder() {
         return alert('Кошик порожній!');
     }
 
-    const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-const total = subtotal - activeDiscount > 0 ? subtotal - activeDiscount : 0;
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
     const rpcItems = items.map(i => ({
         product_id: i.id,
@@ -438,12 +396,7 @@ const total = subtotal - activeDiscount > 0 ? subtotal - activeDiscount : 0;
         alert('Помилка збереження замовлення!');
         return;
     }
-      if (activePromoCode) {
-      await supabaseClient
-        .from('promocodes')
-        .update({ is_used: true })
-        .eq('code', activePromoCode);
-    }
+
     if (!orderData || orderData.length === 0) {
         alert('Помилка отримання даних замовлення!');
         return;
@@ -537,19 +490,10 @@ ${itemsList}
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
-    // уменьшаем stock после покупки
-items.forEach(item => {
-    const product = productsData.find(p => p.id == item.id);
-    if (product) {
-        product.stock -= item.qty;
-        if (product.stock < 0) product.stock = 0;
-    }
-});
-
-cart = {};
-saveCart();
-updateFooter();
-render();
+    cart = {};
+    saveCart();
+    updateFooter();
+    render();
 }
 
 
