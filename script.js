@@ -11,7 +11,7 @@ let activePromoCode = null;
 let productsData = [];
 let currentSort = 'promo';
 let cart = {};
-let currentCategory = 'all';
+let currentCategory = 'Рідина';
 let favorites = JSON.parse(localStorage.getItem('puff_favs')) || [];
 
 
