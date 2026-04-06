@@ -259,7 +259,32 @@ function openFavorites() {
 
 
 // ================= UI =================
+async function applyPromo() {
+    const codeInput = document.getElementById('promo-input').value.trim();
+    const msg = document.getElementById('promo-message');
+    
+    if (!codeInput) return;
 
+    // Ищем код в твоей таблице promocodes
+    const { data, error } = await supabaseClient
+        .from('promocodes')
+        .select('*')
+        .eq('code', codeInput)
+        .eq('is_used', false)
+        .single();
+
+    if (error || !data) {
+        msg.style.color = '#ff5252';
+        msg.innerText = '❌ Код недійсний або використаний';
+        activeDiscount = 0;
+        activePromoCode = null;
+    } else {
+        msg.style.color = '#31b545';
+        msg.innerText = `✅ Знижка ${data.discount_amount} ₴ активована!`;
+        activeDiscount = data.discount_amount;
+        activePromoCode = data.code;
+    }
+}
 function filterCat(cat, el) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
