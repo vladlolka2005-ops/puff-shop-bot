@@ -278,12 +278,19 @@ async function applyPromo() {
         msg.innerText = '❌ Код недійсний або використаний';
         activeDiscount = 0;
         activePromoCode = null;
-    } else {
-        msg.style.color = '#31b545';
-        msg.innerText = `✅ Знижка ${data.discount_amount} ₴ активована!`;
-        activeDiscount = data.discount_amount;
-        activePromoCode = data.code;
-    }
+  } else {
+    msg.style.color = '#31b545';
+    
+    // Считаем сумму скидки в процентах от общей суммы (замени totalAmount на свою переменную суммы)
+    const total = parseFloat(document.getElementById('total-price').innerText); 
+    const discountValue = (total * data.discount_amount) / 100;
+
+    msg.innerText = `✅ Знижка ${data.discount_amount}% активована! (-${discountValue.toFixed(0)} ₴)`;
+    
+    // Сохраняем вычисленную сумму скидки, чтобы она отнялась при финальном расчете
+    activeDiscount = discountValue;
+    activePromoCode = data.code;
+}
 }
 function filterCat(cat, el) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
