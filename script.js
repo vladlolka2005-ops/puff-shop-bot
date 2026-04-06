@@ -367,7 +367,8 @@ async function submitOrder() {
         return alert('Кошик порожній!');
     }
 
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+const total = subtotal - activeDiscount > 0 ? subtotal - activeDiscount : 0;
 
     const rpcItems = items.map(i => ({
         product_id: i.id,
@@ -422,7 +423,12 @@ async function submitOrder() {
         alert('Помилка збереження замовлення!');
         return;
     }
-
+      if (activePromoCode) {
+      await supabaseClient
+        .from('promocodes')
+        .update({ is_used: true })
+        .eq('code', activePromoCode);
+    }
     if (!orderData || orderData.length === 0) {
         alert('Помилка отримання даних замовлення!');
         return;
