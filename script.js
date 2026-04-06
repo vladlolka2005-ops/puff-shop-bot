@@ -11,8 +11,7 @@ let currentCategory = 'Рідина';
 
 let cart = {};
 let favorites = JSON.parse(localStorage.getItem('puff_favs')) || [];
-let appliedPromo = null;
-let discountPercent = 0;
+
 
 // ================= CART STORAGE =================
 
@@ -145,10 +144,7 @@ function updateFooter() {
         totalItems += cart[id].qty;
         totalPrice += cart[id].price * cart[id].qty;
     }
-     if (discountPercent > 0) {
-    totalPrice = totalPrice * (1 - discountPercent / 100);
-    totalPrice = Math.round(totalPrice);
-   }
+
     const text = totalItems > 0
         ? `Кошик (${totalItems}) — ${totalPrice} ₴`
         : 'Кошик порожній';
@@ -337,10 +333,7 @@ async function submitOrder() {
 
     if (!name || !/^\d{9}$/.test(phone)) {
         return alert('Перевірте контактні дані!');
-     <input id="promo-input" placeholder="Промокод">
-     <button onclick="applyPromo()">Застосувати</button>
-     <div id="promo-info"></div>
-	}
+    }
 
     const items = Object.values(cart);
 
@@ -348,12 +341,7 @@ async function submitOrder() {
         return alert('Кошик порожній!');
     }
 
-    let total = items.reduce((s, i) => s + i.price * i.qty, 0);
-
-if (discountPercent > 0) {
-    total = total * (1 - discountPercent / 100);
-    total = Math.round(total);
-}
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
     const rpcItems = items.map(i => ({
         product_id: i.id,
@@ -416,17 +404,7 @@ if (discountPercent > 0) {
 
     const orderNumber = orderData[0].order_number;
     const prettyId = String(orderNumber).padStart(6, '0');
-if (appliedPromo) {
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const telegramId = tgUser?.id;
 
-    await supabaseClient
-        .from('promo_usage')
-        .insert([{
-            promo_code: appliedPromo,
-            telegram_id: telegramId
-        }]);
-}
     // ================= TELEGRAM =================
 
     const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
@@ -517,59 +495,7 @@ ${itemsList}
     updateFooter();
     render();
 }
-async function applyPromo() {
-    const code = document.getElementById('promo-input').value.trim();
 
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const telegramId = tgUser?.id;
-
-    if (!code) {
-        alert('Введіть промокод');
-        return;
-    }
-
-    if (!telegramId) {
-        alert('Помилка Telegram');
-        return;
-    }
-
-    // 🔹 1. проверка промокода
-    const { data: promo, error } = await supabaseClient
-        .from('promocodes')
-        .select('*')
-        .eq('code', code)
-        .eq('active', true)
-        .single();
-
-    if (error || !promo) {
-        document.getElementById('promo-info').innerText =
-            '❌ Невірний промокод';
-        return;
-    }
-
-    // 🔹 2. проверка использовал ли уже
-    const { data: used } = await supabaseClient
-        .from('promo_usage')
-        .select('*')
-        .eq('promo_code', code)
-        .eq('telegram_id', telegramId)
-        .maybeSingle();
-
-    if (used) {
-        document.getElementById('promo-info').innerText =
-            '❌ Ви вже використовували цей промокод';
-        return;
-    }
-
-    // 🔹 3. применяем
-    appliedPromo = promo.code;
-    discountPercent = promo.discount;
-
-    document.getElementById('promo-info').innerText =
-        `✅ Знижка ${discountPercent}% застосована`;
-
-    updateFooter();
-}
 
 // ================= START =================
 
