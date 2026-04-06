@@ -50,7 +50,8 @@ async function load() {
         return;
     }
 
-    productsData = data;
+    productsData = data || [];
+    console.log("Загруженные товары:", productsData);
     validateCart();
     render();
 }
@@ -62,9 +63,11 @@ function render() {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
 
-    let filtered = productsData.filter(p =>
-        currentCategory === 'Рідина' || p.category === currentCategory
-    );
+    let filtered = productsData.filter(p => {
+        if (currentCategory === 'all') return true;
+
+        return p.category?.toLowerCase() === currentCategory.toLowerCase();
+    });
 
     filtered.sort((a, b) => {
         if (b.stock !== a.stock) {
@@ -79,6 +82,10 @@ function render() {
 
         return 0;
     });
+
+    console.log("Категория:", currentCategory);
+    console.log("Товары:", productsData);
+    console.log("После фильтра:", filtered);
 
     grid.innerHTML = filtered.map(p => {
         const isFav = favorites.includes(p.id);
@@ -530,10 +537,19 @@ ${itemsList}
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
-    cart = {};
-    saveCart();
-    updateFooter();
-    render();
+    // уменьшаем stock после покупки
+items.forEach(item => {
+    const product = productsData.find(p => p.id == item.id);
+    if (product) {
+        product.stock -= item.qty;
+        if (product.stock < 0) product.stock = 0;
+    }
+});
+
+cart = {};
+saveCart();
+updateFooter();
+render();
 }
 
 
