@@ -405,17 +405,19 @@ async function submitOrder() {
     const orderNumber = orderData[0].order_number;
     const prettyId = String(orderNumber).padStart(6, '0');
 
-    // ================= TELEGRAM =================
+   // ================= TELEGRAM =================
 
-    const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
-    const adminId = '6405107523';
+const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
+const adminId = '6405107523';
 
-    const deliveryText = delivery === 'nova_poshta'
-        ? `🚚 Нова Пошта (${city}, відд. №${warehouse})`
+// ВИПРАВЛЕНО: додано двокрапку та дефолтне значення, щоб закрити тернарний оператор
+const deliveryText = delivery === 'nova_poshta'
+    ? `🚚 Нова Пошта (${city}, відд. №${warehouse})`
+    : `🚚 Доставка`; 
 
-    const paymentText = payment === 'cash'
-        ? '💵 Готівка / На карту'
-        : '💳 Оплата на сайті';
+const paymentText = payment === 'cash'
+    ? '💵 Готівка / На карту'
+    : '💳 Оплата на сайті';
 
     const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
 
