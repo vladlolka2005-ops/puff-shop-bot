@@ -311,12 +311,6 @@ function closeModal(id) {
 
 // ================= CHECKOUT =================
 
-function openCheckout() {
-    if (!Object.keys(cart).length) return alert('Кошик порожній!');
-    document.getElementById('checkout-screen').style.display = 'block';
-    toggleDeliveryFields();
-}
-
 async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
 
@@ -331,8 +325,14 @@ async function submitOrder() {
     const warehouse = document.getElementById('order-warehouse').value.trim();
     const comment = document.getElementById('order-comment').value.trim();
 
-    if (!name || !/^\d{9}$/.test(phone)) {
-        return alert('Перевірте контактні дані!');
+    // Валидация номера телефона
+    let cleanPhone = phone.replace(/\D/g, ''); 
+    if (cleanPhone.startsWith('0') && cleanPhone.length === 10) {
+        cleanPhone = cleanPhone.substring(1);
+    }
+
+    if (!name || !/^\d{9}$/.test(cleanPhone)) {
+        return alert('Перевірте контактні дані! Номер повинен містити 9 цифр (наприклад: 931234567)');
     }
 
     const items = Object.values(cart);
@@ -350,7 +350,7 @@ async function submitOrder() {
 
     // ================= RPC =================
 
-    const { error: rpcError } = await supabaseClient.rpc('create_order', {
+   const { error: rpcError } = await supabaseClient.rpc('create_order', {
         p_items: rpcItems,
     });
 
@@ -362,7 +362,7 @@ async function submitOrder() {
 
     // ================= SAVE ORDER =================
 
-    const orderItems = items.map(i => ({
+   const orderItems = items.map(i => ({
         id: i.id,
         name: i.name,
         qty: i.qty,
@@ -379,13 +379,13 @@ async function submitOrder() {
             customer_name: name,
             telegram: telegramUsername,
             telegram_id: telegramId,
-            phone: phone,
+            phone: cleanPhone,
 
             delivery: delivery,
             payment: payment,
 
-            city: delivery === 'nova_poshta' ? city : null,
-            warehouse: delivery === 'nova_poshta' ? warehouse : null,
+            city: city || null,
+            warehouse: warehouse || null,
 
             comment: comment || null,
         }])
@@ -397,97 +397,19 @@ async function submitOrder() {
         return;
     }
 
-    if (!orderData || orderData.length === 0) {
-        alert('Помилка отримання даних замовлення!');
-        return;
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
-    const orderNumber = orderData[0].order_number;
-    const prettyId = String(orderNumber).padStart(6, '0');
-
-   // ================= TELEGRAM =================
-
-const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
-const adminId = '6405107523';
-
-// ВИПРАВЛЕНО: додано двокрапку та дефолтне значення, щоб закрити тернарний оператор
-const deliveryText = delivery === 'nova_poshta'
-    ? `🚚 Нова Пошта (${city}, відд. №${warehouse})`
-    : `🚚 Доставка`; 
-
-const paymentText = payment === 'cash'
-    ? '💵 Готівка / На карту'
-    : '💳 Оплата на сайті';
-
-    const itemsList = items.map(i => `- ${i.name} (x${i.qty})`).join('\n');
-
-    const adminText = `📦 НОВЕ ЗАМОВЛЕННЯ №${prettyId}!
-
-👤 Клієнт: ${name}
-📞 Тел: +380${phone}
-✈️ TG: ${telegramUsername || '—'}
-
-📍 Доставка: ${deliveryText}
-💰 Оплата: ${paymentText}
-
-📝 Коментар: ${comment || '—'}
-
-🛒 Товари:
-${itemsList}
-
-💰 Сума: ${total} ₴`;
-
-    const clientText = `📦 Дякуємо за замовлення №${prettyId}, ${name}!
-
-🚚 НОВА ПОШТА: передплата 50 грн.
-
-💳 ПОВНА ОПЛАТА: номер картки 4874070059344406
-
-📩 Після оплати очікуємо на вашу квитанцію.
-
-🚀 САМОВИВІЗ: напишіть менеджеру день і зручний час.
-
-📩 Зв'язок з менеджером: @nnpuff`;
-
-    try {
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: adminId,
-                text: adminText,
-            }),
-        });
-
-        if (telegramId) {
-            const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: telegramId,
-                    text: clientText,
-                }),
-            });
-
-            const data = await res.json();
-            if (!data.ok) {
-                console.error('Client Telegram error:', data);
-            }
-        } else {
-            console.warn('Нет telegram_id — сообщение клиенту не отправлено');
-        }
-
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-
-    } catch (e) {
-        console.error('Telegram error:', e);
+// ================= TELEGRAM HAPTICS =================
+	
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
     // ================= UI =================
 
-    document.getElementById('checkout-screen').style.display = 'none';
+   document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
