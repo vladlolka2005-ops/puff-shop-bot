@@ -312,15 +312,13 @@ function closeModal(id) {
 }
 
 
-// ================= CHECKOUT =================
+// ================= CHECKOUT & ORDER SUBMISSION =================
 
-// ================= ORDER SUBMISSION =================
 function openCheckout() {
     if (!Object.keys(cart).length) return alert('Кошик порожній!');
     document.getElementById('checkout-screen').style.display = 'block';
     toggleDeliveryFields();
 
-    // Меняем нативную кнопку под экран оформления
     if (window.Telegram?.WebApp?.MainButton) {
         const mainBtn = window.Telegram.WebApp.MainButton;
         mainBtn.setText("ПІДТВЕРДИТИ ЗАМОВЛЕННЯ");
@@ -328,7 +326,6 @@ function openCheckout() {
         mainBtn.onClick(submitOrder);
     }
 
-    // РАЗБЛОКИРОВКА КЛАВИАТУРЫ ДЛЯ ТГ:
     setTimeout(() => {
         const nameInput = document.getElementById('order-name');
         if (nameInput) {
@@ -371,7 +368,7 @@ async function submitOrder() {
         price: i.price,
     }));
 
-    // Отправляем заказ в БД напрямую (оригинальные английские колонки)
+    // Инсертим заказ напрямую в английские названия полей
     const { error: orderError } = await supabaseClient
         .from('orders')
         .insert([{
@@ -379,7 +376,7 @@ async function submitOrder() {
             total: total,
             status: 'pending',
             customer_name: name,
-            telegram_username: telegramUsername,
+            telegram: telegramUsername,
             telegram_id: telegramId,
             phone: cleanPhone,
             delivery: delivery,
@@ -395,23 +392,21 @@ async function submitOrder() {
         return;
     }
 
-    // Если запись прошла успешно:
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        window.Telegram.WebApp.MainButton.hide(); // Скрываем главную кнопку
+        window.Telegram.WebApp.MainButton.hide(); 
     }
 
-    // Переключаем интерфейс на экран успешного заказа
     document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
-    // Очищаем корзину и обновляем витрину
     cart = {};
     saveCart();
     updateFooter();
     render();
 }
+
 
 // ================= START =================
 
