@@ -370,43 +370,35 @@ async function submitOrder() {
 
     // ================= SAVE ORDER =================
 
-    const orderItems = items.map(i => ({
+  const orderItems = items.map(i => ({
         id: i.id,
         name: i.name,
         qty: i.qty,
         price: i.price,
     }));
 
-    const { data: orderData, error: orderError } = await supabaseClient
+    // Отправляем заказ в БД с оригинальными АНГЛИЙСКИМИ названиями колонок
+    const { error: orderError } = await supabaseClient
         .from('orders')
         .insert([{
             items: orderItems,
             total: total,
             status: 'pending',
-
             customer_name: name,
-            telegram: telegramUsername,
+            telegram_username: telegramUsername,
             telegram_id: telegramId,
             phone: cleanPhone,
-
             delivery: delivery,
             payment: payment,
-
             city: delivery === 'nova_poshta' ? city : null,
             warehouse: delivery === 'nova_poshta' ? warehouse : null,
-
             comment: comment || null,
-        }])
-        .select();
+        }]);
 
     if (orderError) {
         console.error('Ошибка сохранения заказа:', orderError);
         alert('Помилка збереження замовлення!');
         return;
-    }
-
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
     // ================= UI Сброс =================
