@@ -412,7 +412,6 @@ async function submitOrder() {
 
     const deliveryText = delivery === 'nova_poshta'
         ? `🚚 Нова Пошта (${city}, відд. №${warehouse})`
-        : '🏃 Самовивіз';
 
     const paymentText = payment === 'cash'
         ? '💵 Готівка / На карту'
