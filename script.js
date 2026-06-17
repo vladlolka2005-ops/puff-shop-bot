@@ -329,7 +329,6 @@ function openCheckout() {
     }
 
     // РАЗБЛОКИРОВКА КЛАВИАТУРЫ ДЛЯ ТГ:
-    // Принудительно передаем фокус на инпут имени, чтобы убрать баг с блокировкой ввода
     setTimeout(() => {
         const nameInput = document.getElementById('order-name');
         if (nameInput) {
@@ -360,21 +359,6 @@ async function submitOrder() {
     if (!items.length) return alert('Кошик порожній!');
 
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-    const rpcItems = items.map(i => ({
-        product_id: Number(i.id),
-        quantity: Number(i.qty),
-    }));
-
-    // Вызываем RPC функцию для списания остатков на сервере
-    const { error: rpcError } = await supabaseClient.rpc('create_order', {
-        p_items: rpcItems,
-    });
-
-    if (rpcError) {
-        console.error('RPC error:', rpcError.message);
-        alert('Помилка оформлення замовлення: ' + rpcError.message);
-        return;
-    }
 
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
     const telegramId = tgUser?.id || null;
@@ -387,7 +371,7 @@ async function submitOrder() {
         price: i.price,
     }));
 
-    // Инсертим заказ в БД с ОРИГИНАЛЬНЫМИ английскими названиями полей
+    // Отправляем заказ в БД напрямую (оригинальные английские колонки)
     const { error: orderError } = await supabaseClient
         .from('orders')
         .insert([{
@@ -411,9 +395,10 @@ async function submitOrder() {
         return;
     }
 
+    // Если запись прошла успешно:
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        window.Telegram.WebApp.MainButton.hide(); // Прячем нативную кнопку
+        window.Telegram.WebApp.MainButton.hide(); // Скрываем главную кнопку
     }
 
     // Переключаем интерфейс на экран успешного заказа
@@ -421,71 +406,12 @@ async function submitOrder() {
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
+    // Очищаем корзину и обновляем витрину
     cart = {};
     saveCart();
     updateFooter();
     render();
 }
-
-
-
-    // ================= RPC =================
-
-    const { error: rpcError } = await supabaseClient.rpc('create_order', {
-        p_items: rpcItems,
-    });
-
-    if (rpcError) {
-        console.error('RPC error:', rpcError.message);
-        alert('Помилка оформлення замовлення: ' + rpcError.message);
-        return;
-    }
-
-    // ================= SAVE ORDER =================
-
-  const orderItems = items.map(i => ({
-        id: i.id,
-        name: i.name,
-        qty: i.qty,
-        price: i.price,
-    }));
-
-    // Отправляем заказ в БД с оригинальными АНГЛИЙСКИМИ названиями колонок
-    const { error: orderError } = await supabaseClient
-        .from('orders')
-        .insert([{
-            items: orderItems,
-            total: total,
-            status: 'pending',
-            customer_name: name,
-            telegram_username: telegramUsername,
-            telegram_id: telegramId,
-            phone: cleanPhone,
-            delivery: delivery,
-            payment: payment,
-            city: delivery === 'nova_poshta' ? city : null,
-            warehouse: delivery === 'nova_poshta' ? warehouse : null,
-            comment: comment || null,
-        }]);
-
-    if (orderError) {
-        console.error('Ошибка сохранения заказа:', orderError);
-        alert('Помилка збереження замовлення!');
-        return;
-    }
-
-    // ================= UI Сброс =================
-
-    document.getElementById('checkout-screen').style.display = 'none';
-    document.getElementById('cart-screen').style.display = 'none';
-    document.getElementById('success-screen').style.display = 'block';
-
-    cart = {};
-    saveCart();
-    updateFooter();
-    render();
-}
-
 
 // ================= START =================
 
