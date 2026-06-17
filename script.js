@@ -90,20 +90,24 @@ function render() {
 // ================= CART =================
 
 function addToCart(id) {
-    const product = productsData.find(p => p.id === id);
+    // Принудительно переводим id в число, чтобы сравнение всегда работало правильно
+    const numericId = Number(id);
+    
+    const product = productsData.find(p => Number(p.id) === numericId);
     if (!product) return;
 
-    const currentQty = cart[id]?.qty || 0;
+    const currentQty = cart[numericId]?.qty || 0;
 
-    if (currentQty >= product.stock) {
+    // Проверяем остаток (приводим оба значения к числам для безопасности)
+    if (Number(currentQty) >= Number(product.stock)) {
         alert('Більше немає в наявності');
         return;
     }
 
-    if (cart[id]) {
-        cart[id].qty++;
+    if (cart[numericId]) {
+        cart[numericId].qty++;
     } else {
-        cart[id] = { ...product, qty: 1 };
+        cart[numericId] = { ...product, qty: 1 };
     }
 
     saveCart();
@@ -112,65 +116,6 @@ function addToCart(id) {
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
-}
-
-function changeQty(id, delta) {
-    if (!cart[id]) return;
-
-    const product = productsData.find(p => p.id == id);
-    if (!product) return;
-
-    const newQty = cart[id].qty + delta;
-
-    if (newQty < 1) return;
-
-    if (newQty > product.stock) {
-        alert('Досягнуто максимальну кількість товару на складі');
-        return;
-    }
-
-    cart[id].qty = newQty;
-
-    saveCart();
-    updateFooter();
-    renderCart();
-}
-
-function updateFooter() {
-    let totalItems = 0;
-    let totalPrice = 0;
-
-    for (let id in cart) {
-        totalItems += cart[id].qty;
-        totalPrice += cart[id].price * cart[id].qty;
-    }
-
-    const text = totalItems > 0
-        ? `Кошик (${totalItems}) — ${totalPrice} ₴`
-        : 'Кошик порожній';
-
-    const mainBtn = document.getElementById('cart-footer');
-    if (mainBtn) mainBtn.innerText = text;
-
-    const favBtn = document.getElementById('fav-cart-footer');
-    if (favBtn) favBtn.innerText = text;
-}
-
-function validateCart() {
-    for (let id in cart) {
-        const product = productsData.find(p => p.id == id);
-        if (!product) continue;
-
-        if (cart[id].qty > product.stock) {
-            cart[id].qty = product.stock;
-        }
-
-        if (product.stock <= 0) {
-            delete cart[id];
-        }
-    }
-
-    saveCart();
 }
 
 function renderCart() {
@@ -484,7 +429,8 @@ function handleBuy(btn, id) {
         flyToCart(img, 'cart-footer');
     }
 
-    addToCart(id);
+    // Передаем число
+    addToCart(Number(id));
 }
 
 
