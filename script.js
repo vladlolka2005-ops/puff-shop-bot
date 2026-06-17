@@ -31,7 +31,8 @@ function loadCart() {
 }
 
 function removeFromCart(id) {
-    delete cart[id];
+    const numericId = Number(id);
+    delete cart[numericId];
     saveCart();
     updateFooter();
     renderCart();
@@ -79,7 +80,7 @@ function render() {
     });
 
     grid.innerHTML = filtered.map(p => {
-        const isFav = favorites.includes(p.id);
+        const isFav = favorites.includes(Number(p.id));
         return renderProductCard(p, { isFavorite: isFav });
     }).join('');
 
@@ -90,15 +91,12 @@ function render() {
 // ================= CART =================
 
 function addToCart(id) {
-    // Принудительно переводим id в число, чтобы сравнение всегда работало правильно
     const numericId = Number(id);
-    
     const product = productsData.find(p => Number(p.id) === numericId);
     if (!product) return;
 
     const currentQty = cart[numericId]?.qty || 0;
 
-    // Проверяем остаток (приводим оба значения к числам для безопасности)
     if (Number(currentQty) >= Number(product.stock)) {
         alert('Більше немає в наявності');
         return;
@@ -116,6 +114,66 @@ function addToCart(id) {
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
+}
+
+function changeQty(id, delta) {
+    const numericId = Number(id);
+    if (!cart[numericId]) return;
+
+    const product = productsData.find(p => Number(p.id) === numericId);
+    if (!product) return;
+
+    const newQty = cart[numericId].qty + delta;
+
+    if (newQty < 1) return;
+
+    if (newQty > product.stock) {
+        alert('Досягнуто максимальну кількість товару на складі');
+        return;
+    }
+
+    cart[numericId].qty = newQty;
+
+    saveCart();
+    updateFooter();
+    renderCart();
+}
+
+function updateFooter() {
+    let totalItems = 0;
+    let totalPrice = 0;
+
+    for (let id in cart) {
+        totalItems += cart[id].qty;
+        totalPrice += cart[id].price * cart[id].qty;
+    }
+
+    const text = totalItems > 0
+        ? `Кошик (${totalItems}) — ${totalPrice} ₴`
+        : 'Кошик порожній';
+
+    const mainBtn = document.getElementById('cart-footer');
+    if (mainBtn) mainBtn.innerText = text;
+
+    const favBtn = document.getElementById('fav-cart-footer');
+    if (favBtn) favBtn.innerText = text;
+}
+
+function validateCart() {
+    for (let id in cart) {
+        const product = productsData.find(p => Number(p.id) === Number(id));
+        if (!product) continue;
+
+        if (cart[id].qty > product.stock) {
+            cart[id].qty = product.stock;
+        }
+
+        if (product.stock <= 0) {
+            delete cart[id];
+        }
+    }
+
+    saveCart();
 }
 
 function renderCart() {
@@ -159,12 +217,12 @@ function renderCart() {
 // ================= FAVORITES =================
 
 function toggleFav(id) {
-    id = Number(id);
+    const numericId = Number(id);
 
-    const index = favorites.indexOf(id);
+    const index = favorites.indexOf(numericId);
 
     if (index === -1) {
-        favorites.push(id);
+        favorites.push(numericId);
     } else {
         favorites.splice(index, 1);
     }
@@ -182,8 +240,8 @@ function openFavorites() {
     document.getElementById('favorites-screen').style.display = 'block';
 
     const favProducts = productsData
-        .filter(p => favorites.includes(p.id))
-        .map(p => productsData.find(x => x.id === p.id) || p);
+        .filter(p => favorites.includes(Number(p.id)))
+        .map(p => productsData.find(x => Number(x.id) === Number(p.id)) || p);
 
     const grid = document.getElementById('favorites-grid');
     const cartContainer = document.getElementById('fav-cart-container');
@@ -256,6 +314,12 @@ function closeModal(id) {
 
 // ================= CHECKOUT =================
 
+function openCheckout() {
+    if (!Object.keys(cart).length) return alert('Кошик порожній!');
+    document.getElementById('checkout-screen').style.display = 'block';
+    toggleDeliveryFields();
+}
+
 async function submitOrder() {
     const name = document.getElementById('order-name').value.trim();
 
@@ -270,7 +334,6 @@ async function submitOrder() {
     const warehouse = document.getElementById('order-warehouse').value.trim();
     const comment = document.getElementById('order-comment').value.trim();
 
-    // Валидация номера телефона
     let cleanPhone = phone.replace(/\D/g, ''); 
     if (cleanPhone.startsWith('0') && cleanPhone.length === 10) {
         cleanPhone = cleanPhone.substring(1);
@@ -295,7 +358,7 @@ async function submitOrder() {
 
     // ================= RPC =================
 
-   const { error: rpcError } = await supabaseClient.rpc('create_order', {
+    const { error: rpcError } = await supabaseClient.rpc('create_order', {
         p_items: rpcItems,
     });
 
@@ -307,7 +370,7 @@ async function submitOrder() {
 
     // ================= SAVE ORDER =================
 
-   const orderItems = items.map(i => ({
+    const orderItems = items.map(i => ({
         id: i.id,
         name: i.name,
         qty: i.qty,
@@ -329,8 +392,8 @@ async function submitOrder() {
             delivery: delivery,
             payment: payment,
 
-            city: city || null,
-            warehouse: warehouse || null,
+            city: delivery === 'nova_poshta' ? city : null,
+            warehouse: delivery === 'nova_poshta' ? warehouse : null,
 
             comment: comment || null,
         }])
@@ -346,15 +409,9 @@ async function submitOrder() {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
-// ================= TELEGRAM HAPTICS =================
-	
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
+    // ================= UI Сброс =================
 
-    // ================= UI =================
-
-   document.getElementById('checkout-screen').style.display = 'none';
+    document.getElementById('checkout-screen').style.display = 'none';
     document.getElementById('cart-screen').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
 
@@ -429,7 +486,6 @@ function handleBuy(btn, id) {
         flyToCart(img, 'cart-footer');
     }
 
-    // Передаем число
     addToCart(Number(id));
 }
 
@@ -646,7 +702,7 @@ async function cancelOrder(orderId) {
 
             if (updateError) throw updateError;
 
-            const localProduct = productsData.find(p => p.id == item.id);
+            const localProduct = productsData.find(p => Number(p.id) == Number(item.id));
             if (localProduct) {
                 localProduct.stock = newStock;
             }
@@ -658,51 +714,6 @@ async function cancelOrder(orderId) {
             .eq('id', orderId);
 
         if (updateOrderError) throw updateOrderError;
-
-        // ================= TELEGRAM =================
-
-        const botToken = '8604574755:AAEonaFfivCYbsLWXY7pEpKsg2l3QyJGEVg';
-        const adminId = '6405107523';
-
-        const orderNumber = order.order_number;
-        const prettyId = String(orderNumber).padStart(6, '0');
-
-        const itemsList = order.items
-            .map(i => `- ${i.name} (x${i.qty})`)
-            .join('\n');
-
-        const adminCancelText = `❌ ЗАМОВЛЕННЯ СКАСОВАНО №${prettyId}
-
-		👤 Клієнт: ${order.customer_name}
-		📞 Тел: +380${order.phone}
-		✈️ TG: ${order.telegram || '—'}
-
-		🛒 Товари:
-		${itemsList}
-
-		💰 Сума: ${order.total} ₴`;
-
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: adminId,
-                text: adminCancelText,
-            }),
-        });
-
-        if (order.telegram_id) {
-            const userCancelText = `❌ Ваше замовлення №${prettyId} було скасовано.\nЯкщо це помилка або у вас є питання — зв'яжіться з менеджером: @nnpuff`;
-
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: order.telegram_id,
-                    text: userCancelText,
-                }),
-            });
-        }
 
         validateCart();
         render();
